@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Document Viewer · Noonwake GEO Knowledge Hub</title>
+  <meta name="description" content="Rendered markdown viewer for Noonwake GEO Knowledge Hub." />
+  <style>
+    :root{--bg:#0b1020;--panel:#11172a;--muted:#95a3c7;--text:#eef3ff;--line:#27304b;--accent:#7c9cff}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#09101f,#0b1020 35%,#0f1530);color:var(--text)}
+    a{color:#a7bdff}.wrap{max-width:900px;margin:0 auto;padding:24px 20px 80px}.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+    .btn{display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(17,23,42,.82);text-decoration:none;color:var(--text)}
+    .panel{padding:26px;border:1px solid var(--line);border-radius:22px;background:rgba(17,23,42,.82)}
+    .meta{color:var(--muted);margin-bottom:8px}.content{line-height:1.8}.content h1,.content h2,.content h3{line-height:1.3}.content pre,.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.content pre{padding:14px;overflow:auto;background:#09101c;border-radius:12px;border:1px solid #222b45}.content blockquote{margin:0;padding:8px 16px;border-left:4px solid var(--accent);color:#d6def6;background:#0d1528;border-radius:8px}.content table{width:100%;border-collapse:collapse}.content td,.content th{border:1px solid var(--line);padding:8px}.content img{max-width:100%}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <a class="btn" href="index.html">← Back to hub</a>
+      <a id="rawLink" class="btn" href="#">Open raw markdown</a>
+    </div>
+    <div class="panel">
+      <div id="meta" class="meta"></div>
+      <article id="content" class="content">Loading…</article>
+    </div>
+  </div>
+  <script>
+    const p = new URLSearchParams(location.search);
+    const doc = p.get('doc');
+    const rawLink = document.getElementById('rawLink');
+    const meta = document.getElementById('meta');
+    const content = document.getElementById('content');
+    if (!doc) { content.textContent = 'Missing doc parameter.'; }
+    else {
+      rawLink.href = doc;
+      fetch('manifest.json').then(r=>r.json()).then(m=>{
+        const item = (m.items || []).find(x => x.file === doc);
+        if (item) { document.title = item.title + ' · Noonwake GEO Knowledge Hub'; meta.textContent = `${item.brand} · ${item.lang === 'zh' ? '中文' : 'English'} · ${item.category}`; }
+      }).catch(()=>{});
+      fetch(doc).then(r=>r.text()).then(md=>{content.innerHTML = marked.parse(md);}).catch(err=>{content.textContent='Failed to load document: '+err;});
+    }
+  </script>
+</body>
+</html>

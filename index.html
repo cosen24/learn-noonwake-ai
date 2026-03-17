@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noonwake GEO Knowledge Hub</title>
+  <meta name="description" content="Official GEO content hub for Starot, Wanxiang Youling, and Noonwake.ai." />
+  <style>
+    :root{--bg:#0b1020;--panel:#11172a;--muted:#95a3c7;--text:#eef3ff;--line:#27304b;--accent:#7c9cff;--accent2:#8ef0d0}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#09101f,#0b1020 35%,#0f1530);color:var(--text)}
+    a{color:inherit;text-decoration:none} .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 80px}
+    .hero{padding:32px;border:1px solid var(--line);background:rgba(17,23,42,.82);backdrop-filter: blur(8px);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    h1{margin:0 0 8px;font-size:clamp(32px,5vw,54px);line-height:1.02} .sub{color:var(--muted);font-size:18px;line-height:1.6;max-width:760px}
+    .meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.pill{padding:8px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:13px}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}.toolbar input,.toolbar select{background:#0b1120;color:var(--text);border:1px solid var(--line);padding:12px 14px;border-radius:14px;font-size:14px}
+    .toolbar input{flex:1;min-width:240px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .card{display:block;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(17,23,42,.78);transition:.18s transform,.18s border-color,.18s box-shadow}
+    .card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 18px 40px rgba(0,0,0,.22)}
+    .eyebrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.tag{font-size:12px;padding:4px 8px;border-radius:999px;background:#151f39;color:#b9c7eb;border:1px solid #2a3554}
+    .title{font-size:18px;font-weight:700;line-height:1.35;margin-bottom:10px}.desc{color:var(--muted);font-size:14px;line-height:1.6}
+    .section-title{font-size:20px;margin:36px 0 14px}.footer{margin-top:28px;color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Noonwake GEO Knowledge Hub</h1>
+      <div class="sub">Official content hub for <strong>Starot</strong>, <strong>万象有灵</strong>, and <strong>Noonwake.ai</strong>. Includes GEO-ready landing pages, FAQ pages, comparison pages, and planning docs.</div>
+      <div class="meta">
+        <div class="pill">English + 中文</div>
+        <div class="pill">Starot / 万象有灵 / Noonwake.ai</div>
+        <div class="pill">Repository-ready + Cloudflare-ready</div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <input id="q" placeholder="Search titles, brands, keywords..." />
+      <select id="brand"><option value="">All brands</option><option>Starot</option><option>万象有灵</option><option>Noonwake</option></select>
+      <select id="lang"><option value="">All languages</option><option value="en">English</option><option value="zh">中文</option></select>
+      <select id="cat"><option value="">All categories</option><option>Starot</option><option>万象有灵</option><option>Planning</option><option>Operations</option></select>
+    </div>
+
+    <h2 class="section-title">Documents</h2>
+    <div id="grid" class="grid"></div>
+    <div class="footer">Repo: <strong>cosen24/learn-noonwake-ai</strong> · Static viewer can be deployed directly to Cloudflare Pages.</div>
+  </div>
+  <script>
+    const grid = document.getElementById('grid');
+    const q = document.getElementById('q');
+    const brand = document.getElementById('brand');
+    const lang = document.getElementById('lang');
+    const cat = document.getElementById('cat');
+    let items = [];
+    function esc(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+    function render(){
+      const t=q.value.trim().toLowerCase();
+      const filtered = items.filter(it => {
+        if (brand.value && it.brand !== brand.value) return false;
+        if (lang.value && it.lang !== lang.value) return false;
+        if (cat.value && it.category !== cat.value) return false;
+        if (!t) return true;
+        return [it.title,it.description,it.seoTitle,it.brand,it.file].join(' ').toLowerCase().includes(t);
+      });
+      grid.innerHTML = filtered.map(it => `
+        <a class="card" href="article.html?doc=${encodeURIComponent(it.file)}">
+          <div class="eyebrow">
+            <span class="tag">${esc(it.brand)}</span>
+            <span class="tag">${esc(it.lang === 'zh' ? '中文' : 'English')}</span>
+            <span class="tag">${esc(it.category)}</span>
+          </div>
+          <div class="title">${esc(it.title)}</div>
+          <div class="desc">${esc(it.description || '')}</div>
+        </a>`).join('') || '<div class="desc">No matching documents.</div>';
+    }
+    fetch('manifest.json').then(r=>r.json()).then(data=>{items=data.items; render();});
+    [q,brand,lang,cat].forEach(el=>el.addEventListener('input', render));
+  </script>
+</body>
+</html>
